@@ -6,7 +6,7 @@
       ./hardware-configuration.nix
     ];
 
-    boot = {
+  boot = {
       loader = {
         grub = {
           enable = true;
@@ -42,11 +42,25 @@
 
     services = {
       xserver = {
+        enable = true;
         xkb.layout = "us";
-        libinput.enable = true;
       };
+      libinput.enable = true;
       openssh.enable = true;
-      getty.autologinUser = "app";
+      greetd = {
+        enable = true;
+        settings = {
+          default_session = {
+            command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+            user = "app";
+          };
+        };
+      };
+    };
+
+    programs.hyprland = {
+      enable = true;
+      xwayland.enable = true;
     };
 
     sound.enable = true;
@@ -66,7 +80,7 @@
       };
       app = {
         isNormalUser = true;
-        extraGroups = [ "wheel" ];
+        extraGroups = [ "wheel" "video" "audio" ];
         packages = with pkgs; [];
       };
     };
@@ -77,5 +91,5 @@
       neofetch
     ];
 
-    system.stateVersion = "23.11";
+    system.stateVersion = "24.05";
 }

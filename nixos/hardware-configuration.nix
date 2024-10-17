@@ -12,28 +12,41 @@
     extraModulePackages = [ ];
   };
 
+  boot.initrd = {
+    luks.devices."cryptroot" = {
+      device = "/dev/disk/by-label/CABSECROOT";
+      keyFile = "/luks.key";
+      preLVM = true;
+    };
+    secrets = {
+      "/luks.key" = "/etc/nixos/luks.key";
+    };
+  };
+
   fileSystems = {
     "/" = {
-      device = "/dev/disk/by-label/CABROOT";
-      fsType = "btrfs";
-      options = [ "subvol=@" ];
+        device = "/dev/mapper/cryptroot";
+        fsType = "btrfs";
+        options = [ "subvol=@" "noatime" "compress=zstd" "space_cache=v2" ];
     };
 
     "/boot" = {
-      device = "/dev/disk/by-label/CABEFI";
-      fsType = "vfat";
+        device = "/dev/disk/by-label/CABEFI";
+        fsType = "vfat";
+        options = [ "noatime" ];
     };
 
     "/nix" = {
-      device = "/dev/disk/by-label/CABROOT";
-      fsType = "btrfs";
-      options = [ "subvol=@nix" "compress=zstd" "noatime" ];
+        device = "/dev/mapper/cryptroot";
+        fsType = "btrfs";
+        options = [ "subvol=@nix" "noatime" "compress=zstd" "space_cache=v2" ];
     };
 
     "/etc/nixos" = {
       device = "/dev/disk/by-label/CABDEPLOYFS";
       fsType = "vfat";
-      options = [ "defaults" "nofail" "x-systemd.automount" ];
+      options = [ "defaults" "nofail" "x-systemd.automount" "x-systemd.device-timeout=5s" "noauto" "noatime" ];
+      neededForBoot = true;
     };
   };
 
@@ -41,12 +54,7 @@
     { device = "/dev/disk/by-label/CABSWAP"; }
   ];
 
-  # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
-  # (the default) this is the recommended approach. When using systemd-networkd it's
-  # still possible to use this option, but it's recommended to use it in conjunction
-  # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.ens33.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }
