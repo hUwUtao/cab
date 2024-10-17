@@ -7,3 +7,6 @@ to deploy, create a new vfat32 labeled `CABDEPLOYFS`, spam shik into `luks.key` 
 - [X] looks cool
 - [x] luks root encryption
 - [ ] secure boot
+
+> [!NOTE]
+> on every boot you must have `CABDEPLOYFS` attached
